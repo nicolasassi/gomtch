@@ -64,14 +64,15 @@ Adapted from examples_test.go:
 
 ### Simple document
 
-```package main
+```Go 
+package main
 
 import (
-"bytes"
-"github.com/nicolasassi/gomtch"
-"log"
-"regexp"
-"testing"
+    "bytes"
+    "github.com/nicolasassi/gomtch"
+    "log"
+    "regexp"
+    "testing"
 )
 
 func main() {
@@ -88,84 +89,89 @@ func main() {
     for index, match := range corp.Scan(match) {
         log.Printf("index: %v match: %s", index, string(match))
     }
-}```
+}
+```
 
 ### Playing with matching scores
 
-    package main
+```Go
+package main
 
-    import (
+import (
     "bytes"
     "github.com/nicolasassi/gomtch"
     "log"
     "regexp"
     "testing"
-    )
+)
 
-    func main() {
-        text := []byte("this is a text corp0ra")
-        tokenToFind := []byte("corpora")
-        corp, err := gomtch.NewDoc(bytes.NewReader(text))
-        if err != nil {
-            log.Fatal(err)
-        }
-        // this will not match because the default minimum match score of NewDoc is 100 and
-        // "corp0ra" != "corpora"
-        match1, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
-        if err != nil {
+func main() {
+    text := []byte("this is a text corp0ra")
+    tokenToFind := []byte("corpora")
+    corp, err := gomtch.NewDoc(bytes.NewReader(text))
+    if err != nil {
         log.Fatal(err)
-        }
-        // this will match because 90% of len(tokenToFind) == +- 6. This means that there is space for
-        // one not matching letter.
-        match2, err := gomtch.NewDoc(bytes.NewReader(tokenToFind), gomtch.WithMinimumMatchScore(90))
-        if err != nil {
-            log.Fatal(err)
-        }
-        for index, match := range corp.Scan(match1, match2) {
-            log.Printf("index: %v match: %s", index, string(match))
-        }
     }
+    // this will not match because the default minimum match score of NewDoc is 100 and
+    // "corp0ra" != "corpora"
+    match1, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
+    if err != nil {
+    log.Fatal(err)
+    }
+    // this will match because 90% of len(tokenToFind) == +- 6. This means that there is space for
+    // one not matching letter.
+    match2, err := gomtch.NewDoc(bytes.NewReader(tokenToFind), gomtch.WithMinimumMatchScore(90))
+    if err != nil {
+        log.Fatal(err)
+    }
+    for index, match := range corp.Scan(match1, match2) {
+        log.Printf("index: %v match: %s", index, string(match))
+    }
+}
+```
 
 ### Complex document and conditions
 
-    package main
+```Go
+package main
 
-    import (
-    "bytes"
-    "github.com/nicolasassi/gomtch"
-    "log"
-    "regexp"
-    "testing"
-    )
+import (
+"bytes"
+"github.com/nicolasassi/gomtch"
+"log"
+"regexp"
+"testing"
+)
 
-    func main() {
-        text := []byte("<p>This is REAAAAAAL WORLD example of a téxt quite h4rd to match!!<p>")
-        corp, err := gomtch.NewDoc(bytes.NewReader(text),
-            gomtch.WithSetLower(),
-            gomtch.WithSequentialEqualCharsRemoval(),
-            gomtch.WithHMTLParsing(),
-            gomtch.WithReplacer(regexp.MustCompile(`[\[\]()\-.,:;{}"'!?]`), " "),
-            gomtch.WithTransform(gomtch.NewASCII()))
-        if err != nil {
-            log.Fatal(err)
-        }
-        // this will match because we set that sequential equal caracters shoud removed and the
-        text should be all in lower case.
-        // So REAAAAAL becames real
-        match1, err := gomtch.NewDoc(bytes.NewReader([]byte("real world")))
-        if err != nil {
-            log.Fatal(err)
-        }
-        / this will match because we allow each token to have a 90% minimum match score.
-        match2, err := gomtch.NewDoc(bytes.NewReader([]byte("text quite hard to match")),
-            gomtch.WithMinimumMatchScore(90))
-        if err != nil {
-            log.Fatal(err)
-        }
-        for index, match := range corp.Scan(match1, match2) {
-            log.Printf("index: %v match: %s", index, string(match))
-        }
+func main() {
+    text := []byte("<p>This is REAAAAAAL WORLD example of a téxt quite h4rd to match!!<p>")
+    corp, err := gomtch.NewDoc(bytes.NewReader(text),
+        gomtch.WithSetLower(),
+        gomtch.WithSequentialEqualCharsRemoval(),
+        gomtch.WithHMTLParsing(),
+        gomtch.WithReplacer(regexp.MustCompile(`[\[\]()\-.,:;{}"'!?]`), " "),
+        gomtch.WithTransform(gomtch.NewASCII()))
+    if err != nil {
+        log.Fatal(err)
     }
+    // this will match because we set that sequential equal caracters shoud removed and the
+    text should be all in lower case.
+    // So REAAAAAL becames real
+    match1, err := gomtch.NewDoc(bytes.NewReader([]byte("real world")))
+    if err != nil {
+        log.Fatal(err)
+    }
+    / this will match because we allow each token to have a 90% minimum match score.
+    match2, err := gomtch.NewDoc(bytes.NewReader([]byte("text quite hard to match")),
+        gomtch.WithMinimumMatchScore(90))
+    if err != nil {
+        log.Fatal(err)
+    }
+    for index, match := range corp.Scan(match1, match2) {
+        log.Printf("index: %v match: %s", index, string(match))
+    }
+}
+```
 
 ## Support
 
