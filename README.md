@@ -186,4 +186,4 @@ There are a number of ways you can support the project:
 
 ## License
 
-The [BSD 3-Clause license][bsd], the same as the [Go language][golic].
+The [BSD 3-Clause license], the same as the [Go language].
