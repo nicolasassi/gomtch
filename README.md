@@ -64,31 +64,31 @@ Adapted from examples_test.go:
 
 ### Simple document
 
-    package main
+```package main
 
-    import (
-    "bytes"
-    "github.com/nicolasassi/gomtch"
-    "log"
-    "regexp"
-    "testing"
-    )
+import (
+"bytes"
+"github.com/nicolasassi/gomtch"
+"log"
+"regexp"
+"testing"
+)
 
-    func main() {
-        text := []byte("this is a text c o r p o r a")
-        tokenToFind := []byte("corpora")
-        corp, err := gomtch.NewDoc(bytes.NewReader(text))
-        if err != nil {
-            log.Fatal(err)
-        }
-        match, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
-        if err != nil {
-            log.Fatal(err)
-        }
-        for index, match := range corp.Scan(match) {
-            log.Printf("index: %v match: %s", index, string(match))
-        }
+func main() {
+    text := []byte("this is a text c o r p o r a")
+    tokenToFind := []byte("corpora")
+    corp, err := gomtch.NewDoc(bytes.NewReader(text))
+    if err != nil {
+        log.Fatal(err)
     }
+    match, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
+    if err != nil {
+        log.Fatal(err)
+    }
+    for index, match := range corp.Scan(match) {
+        log.Printf("index: %v match: %s", index, string(match))
+    }
+}```
 
 ### Playing with matching scores
 
