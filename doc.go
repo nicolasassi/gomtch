@@ -8,14 +8,15 @@ import (
 	"unicode"
 )
 
+const whiteSpace = ' '
+
 var (
 	numericalInfo = []rune("%xª°º")
-	whiteSpace    = ' '
 )
 
 type Doc struct {
 	matchScoreFunc func(int, int) bool
-	t              transform.Transformer
+	transformer    transform.Transformer
 	optError       error
 	Text           string
 	Tokens         []string
@@ -36,9 +37,9 @@ func NewDoc(text io.Reader, opts ...Option) (*Doc, error) {
 		// Call the option giving the instantiated
 		// *Doc as the argument
 		opt(d)
-	}
-	if d.optError != nil {
-		return nil, d.optError
+		if d.optError != nil {
+			return nil, d.optError
+		}
 	}
 	if d.Tokens == nil {
 		d.Tokens = strings.Split(d.Text, " ")
