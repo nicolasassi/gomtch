@@ -3,7 +3,7 @@
 Do your users have clever ways to hide some terms from you? Sometimes it is hard to find 
 forbidden terms when the user doesn't want it to be found. 
 
-![technology Go](https://img.shields.io/badge/technology-go-blue.svg) [![Build Status](https://travis-ci.com/nicolasassi/gomtch.svg?branch=main)](https://travis-ci.com/harlow/kinesis-consumer) [![GoDoc](https://godoc.org/github.com/nicolasassi/gomtch?status.svg)](https://pkg.go.dev/github.com/nicolasassi/gomtch) [![GoReportCard](https://goreportcard.com/badge/github.com/nicolasassi/gomtch)](https://goreportcard.com/report/nicolasassi/gomtch)
+![technology Go](https://img.shields.io/badge/technology-go-blue.svg) [![Build Status](https://travis-ci.com/nicolasassi/gomtch.svg?branch=main)](https://travis-ci.com/nicolasassi/gomatch) [![GoDoc](https://godoc.org/github.com/nicolasassi/gomtch?status.svg)](https://pkg.go.dev/github.com/nicolasassi/gomtch) [![GoReportCard](https://goreportcard.com/badge/github.com/nicolasassi/gomtch)](https://goreportcard.com/report/nicolasassi/gomtch)
 
 gomtch aims to help you find tokens in real life text offering the flexibility that most
 out-of-the-box algorithms lack.
