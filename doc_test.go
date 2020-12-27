@@ -27,89 +27,67 @@ func TestNewDoc(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", args{text: strings.NewReader("cocaina")}, &Doc{
-			transformer: nil,
-			optError:    nil,
-			Text:        "cocaina",
-			Tokens:      []string{"cocaina"},
+			Text:   "cocaina",
+			Tokens: strings.Split("cocaina", " "),
 		}, false},
 		{"withHMTLParsingPTag", args{
 			text: strings.NewReader("<p>cocaina</p>"), opts: []Option{WithHMTLParsing()}}, &Doc{
-			transformer: nil,
-			optError:    nil,
-			Text:        "cocaina",
-			Tokens:      []string{"cocaina"},
+			Text:   "cocaina",
+			Tokens: []string{"cocaina"},
 		}, false},
 		{"withHMTLParsingBTag", args{
 			text: strings.NewReader("<b>cocaina</b>"), opts: []Option{WithHMTLParsing()}}, &Doc{
-			transformer: nil,
-			optError:    nil,
-			Text:        "cocaina",
-			Tokens:      []string{"cocaina"},
+			Text:   "cocaina",
+			Tokens: []string{"cocaina"},
 		}, false},
 		{"withTransform", args{
 			text: strings.NewReader("cocaína"), opts: []Option{WithTransform(NewASCII())}}, &Doc{
-			transformer: nil,
-			optError:    nil,
-			Text:        "cocaina",
-			Tokens:      []string{"cocaina"},
+			Text:   "cocaina",
+			Tokens: []string{"cocaina"},
 		}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("cocaiiiina"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "cocaina",
-				Tokens:      []string{"cocaina"},
+				Text:   "cocaina",
+				Tokens: []string{"cocaina"},
 			}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("cocaííína"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "cocaína",
-				Tokens:      []string{"cocaína"},
+				Text:   "cocaína",
+				Tokens: []string{"cocaína"},
 			}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("iphone 11"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "iphone 11",
-				Tokens:      []string{"iphone", "11"},
+				Text:   "iphone 11",
+				Tokens: []string{"iphone", "11"},
 			}, false},
 		{"withSetLower", args{
 			text: strings.NewReader("Cocaína"), opts: []Option{WithSetLower()}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "cocaína",
-				Tokens:      []string{"cocaína"},
+				Text:   "cocaína",
+				Tokens: []string{"cocaína"},
 			}, false},
 		{"withSetUpper", args{
 			text: strings.NewReader("Cocaína"), opts: []Option{WithSetUpper()}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "COCAÍNA",
-				Tokens:      []string{"COCAÍNA"},
+				Text:   "COCAÍNA",
+				Tokens: []string{"COCAÍNA"},
 			}, false},
 		{"withReplacer", args{
 			text: strings.NewReader("coca (cocaína) para compra-venda"),
 			opts: []Option{WithReplacer(regexp.MustCompile(`[()-]`), " ")}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "coca  cocaína  para compra venda",
-				Tokens:      []string{"coca", "", "cocaína", "", "para", "compra", "venda"},
+				Text:   "coca  cocaína  para compra venda",
+				Tokens: []string{"coca", "", "cocaína", "", "para", "compra", "venda"},
 			}, false},
 		{"withCustomRegexpTokenizer", args{
 			text: strings.NewReader("coca cocaína para compra venda"),
 			opts: []Option{}},
 			&Doc{
-				transformer: nil,
-				optError:    nil,
-				Text:        "coca cocaína para compra venda",
-				Tokens:      []string{"coca", "cocaína", "para", "compra", "venda"},
+				Text:   "coca cocaína para compra venda",
+				Tokens: []string{"coca", "cocaína", "para", "compra", "venda"},
 			}, false},
 	}
 	for _, tt := range tests {
@@ -119,7 +97,14 @@ func TestNewDoc(t *testing.T) {
 				t.Errorf("NewDoc() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
-			if !reflect.DeepEqual(got, tt.want) {
+			if got == nil {
+				t.Errorf("NewDoc() got = nil")
+				return
+			}
+			if !reflect.DeepEqual(got.Tokens, tt.want.Tokens) ||
+				!reflect.DeepEqual(got.Text, tt.want.Text) ||
+				!reflect.DeepEqual(got.optError, tt.want.optError) ||
+				!reflect.DeepEqual(got.transformer, tt.want.transformer) {
 				t.Errorf("NewDoc() got = %+v, want %+v", got, tt.want)
 			}
 		})
