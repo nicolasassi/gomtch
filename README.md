@@ -3,6 +3,8 @@
 Do your users have clever ways to hide some terms from you? Sometimes it is hard to find 
 forbidden terms when the user doesn't want it to be found. 
 
+![technology Go](https://img.shields.io/badge/technology-go-blue.svg) [![Build Status](https://travis-ci.com/nicolasassi/gomtch.svg?branch=main)](https://travis-ci.com/harlow/kinesis-consumer) [![GoDoc](https://godoc.org/github.com/nicolasassi/gomtch?status.svg)](https://pkg.go.dev/github.com/nicolasassi/gomtch) [![GoReportCard](https://goreportcard.com/badge/github.com/nicolasassi/gomtch)](https://goreportcard.com/report/nicolasassi/gomtch)
+
 gomtch aims to help you find tokens in real life text offering the flexibility that most
 out-of-the-box algorithms lack.
 Ever wanted to find instances of a split word in text corpora (s p l i t e d)? Most NLP algorithms
@@ -17,6 +19,7 @@ how much (%) of a term should be considered (ex: h4rd matches 90% with the word 
 ## Table of Contents
 
 * [Installation](#installation)
+* [Docs](#docs)
 * [API](#api)
 * [Examples](#examples)
 * [Support](#support)
@@ -33,11 +36,15 @@ just your good old `go get`
     $ cd $GOPATH/src/github.com/nicolasassi/gomtch
     $ go test
 
-(optional) To run benchmarks (warning: it runs for a few minutes):
+(optional) To run benchmarks (warning: it might take some time):
 
     $ cd $GOPATH/src/github.com/nicolasassi/gomtch
     $ go test -bench=".*"
 
+
+## Docs
+
+https://pkg.go.dev/github.com/nicolasassi/gomtch
 
 ## API
 
@@ -71,8 +78,6 @@ import (
     "bytes"
     "github.com/nicolasassi/gomtch"
     "log"
-    "regexp"
-    "testing"
 )
 
 func main() {
@@ -94,53 +99,50 @@ func main() {
 
 ### Playing with matching scores
 
-```Go
+```Go 
 package main
 
 import (
-    "bytes"
-    "github.com/nicolasassi/gomtch"
-    "log"
-    "regexp"
-    "testing"
+  "bytes"
+  "github.com/nicolasassi/gomtch"
+  "log"
 )
 
 func main() {
-    text := []byte("this is a text corp0ra")
-    tokenToFind := []byte("corpora")
-    corp, err := gomtch.NewDoc(bytes.NewReader(text))
-    if err != nil {
-        log.Fatal(err)
-    }
-    // this will not match because the default minimum match score of NewDoc is 100 and
-    // "corp0ra" != "corpora"
-    match1, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
-    if err != nil {
+  text := []byte("this is a text corp0ra")
+  tokenToFind := []byte("corpora")
+  corp, err := gomtch.NewDoc(bytes.NewReader(text))
+  if err != nil {
     log.Fatal(err)
-    }
-    // this will match because 90% of len(tokenToFind) == +- 6. This means that there is space for
-    // one not matching letter.
-    match2, err := gomtch.NewDoc(bytes.NewReader(tokenToFind), gomtch.WithMinimumMatchScore(90))
-    if err != nil {
-        log.Fatal(err)
-    }
-    for index, match := range corp.Scan(match1, match2) {
-        log.Printf("index: %v match: %s", index, string(match))
-    }
+  }
+  // this will not match because the default minimum match score of NewDoc is 100 and
+  // "corp0ra" != "corpora"
+  match1, err := gomtch.NewDoc(bytes.NewReader(tokenToFind))
+  if err != nil {
+    log.Fatal(err)
+  }
+  // this will match because 90% of len(tokenToFind) == +- 6. This means that there is space for
+  // one not matching letter.
+  match2, err := gomtch.NewDoc(bytes.NewReader(tokenToFind), gomtch.WithMinimumMatchScore(90))
+  if err != nil {
+    log.Fatal(err)
+  }
+  for index, match := range corp.Scan(match1, match2) {
+    log.Printf("index: %v match: %s", index, string(match))
+  }
 }
 ```
 
 ### Complex document and conditions
 
-```Go
+```Go 
 package main
 
 import (
-"bytes"
-"github.com/nicolasassi/gomtch"
-"log"
-"regexp"
-"testing"
+  "bytes"
+  "github.com/nicolasassi/gomtch"
+  "log"
+  "regexp"
 )
 
 func main() {
@@ -155,13 +157,13 @@ func main() {
         log.Fatal(err)
     }
     // this will match because we set that sequential equal caracters shoud removed and the
-    text should be all in lower case.
+    // text should be all in lower case.
     // So REAAAAAL becames real
     match1, err := gomtch.NewDoc(bytes.NewReader([]byte("real world")))
     if err != nil {
         log.Fatal(err)
     }
-    / this will match because we allow each token to have a 90% minimum match score.
+    // this will match because we allow each token to have a 90% minimum match score.
     match2, err := gomtch.NewDoc(bytes.NewReader([]byte("text quite hard to match")),
         gomtch.WithMinimumMatchScore(90))
     if err != nil {
