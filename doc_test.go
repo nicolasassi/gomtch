@@ -27,89 +27,89 @@ func TestNewDoc(t *testing.T) {
 		wantErr bool
 	}{
 		{"default", args{text: strings.NewReader("cocaina")}, &Doc{
-			t:        nil,
-			optError: nil,
-			Text:     "cocaina",
-			Tokens:   []string{"cocaina"},
+			transformer: nil,
+			optError:    nil,
+			Text:        "cocaina",
+			Tokens:      []string{"cocaina"},
 		}, false},
 		{"withHMTLParsingPTag", args{
 			text: strings.NewReader("<p>cocaina</p>"), opts: []Option{WithHMTLParsing()}}, &Doc{
-			t:        nil,
-			optError: nil,
-			Text:     "cocaina",
-			Tokens:   []string{"cocaina"},
+			transformer: nil,
+			optError:    nil,
+			Text:        "cocaina",
+			Tokens:      []string{"cocaina"},
 		}, false},
 		{"withHMTLParsingBTag", args{
 			text: strings.NewReader("<b>cocaina</b>"), opts: []Option{WithHMTLParsing()}}, &Doc{
-			t:        nil,
-			optError: nil,
-			Text:     "cocaina",
-			Tokens:   []string{"cocaina"},
+			transformer: nil,
+			optError:    nil,
+			Text:        "cocaina",
+			Tokens:      []string{"cocaina"},
 		}, false},
 		{"withTransform", args{
 			text: strings.NewReader("cocaína"), opts: []Option{WithTransform(NewASCII())}}, &Doc{
-			t:        nil,
-			optError: nil,
-			Text:     "cocaina",
-			Tokens:   []string{"cocaina"},
+			transformer: nil,
+			optError:    nil,
+			Text:        "cocaina",
+			Tokens:      []string{"cocaina"},
 		}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("cocaiiiina"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "cocaina",
-				Tokens:   []string{"cocaina"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "cocaina",
+				Tokens:      []string{"cocaina"},
 			}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("cocaííína"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "cocaína",
-				Tokens:   []string{"cocaína"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "cocaína",
+				Tokens:      []string{"cocaína"},
 			}, false},
 		{"withSequentialEqualCharsRemoval", args{
 			text: strings.NewReader("iphone 11"), opts: []Option{WithSequentialEqualCharsRemoval()}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "iphone 11",
-				Tokens:   []string{"iphone", "11"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "iphone 11",
+				Tokens:      []string{"iphone", "11"},
 			}, false},
 		{"withSetLower", args{
 			text: strings.NewReader("Cocaína"), opts: []Option{WithSetLower()}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "cocaína",
-				Tokens:   []string{"cocaína"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "cocaína",
+				Tokens:      []string{"cocaína"},
 			}, false},
 		{"withSetUpper", args{
 			text: strings.NewReader("Cocaína"), opts: []Option{WithSetUpper()}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "COCAÍNA",
-				Tokens:   []string{"COCAÍNA"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "COCAÍNA",
+				Tokens:      []string{"COCAÍNA"},
 			}, false},
 		{"withReplacer", args{
 			text: strings.NewReader("coca (cocaína) para compra-venda"),
 			opts: []Option{WithReplacer(regexp.MustCompile(`[()-]`), " ")}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "coca  cocaína  para compra venda",
-				Tokens:   []string{"coca", "", "cocaína", "", "para", "compra", "venda"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "coca  cocaína  para compra venda",
+				Tokens:      []string{"coca", "", "cocaína", "", "para", "compra", "venda"},
 			}, false},
 		{"withCustomRegexpTokenizer", args{
 			text: strings.NewReader("coca cocaína para compra venda"),
 			opts: []Option{}},
 			&Doc{
-				t:        nil,
-				optError: nil,
-				Text:     "coca cocaína para compra venda",
-				Tokens:   []string{"coca", "cocaína", "para", "compra", "venda"},
+				transformer: nil,
+				optError:    nil,
+				Text:        "coca cocaína para compra venda",
+				Tokens:      []string{"coca", "cocaína", "para", "compra", "venda"},
 			}, false},
 	}
 	for _, tt := range tests {
@@ -144,9 +144,9 @@ func TestDoc_String(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			d := Doc{
-				t:        tt.fields.t,
-				optError: tt.fields.optError,
-				Text:     tt.fields.text,
+				transformer: tt.fields.t,
+				optError:    tt.fields.optError,
+				Text:        tt.fields.text,
 			}
 			if got := d.String(); got != tt.want {
 				t.Errorf("String() = %v, want %v", got, tt.want)
@@ -280,7 +280,7 @@ func TestDoc_IsSame(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			d := Doc{
 				matchScoreFunc: tt.fields.matchScoreFunc,
-				t:              tt.fields.t,
+				transformer:    tt.fields.t,
 				optError:       tt.fields.optError,
 				Text:           tt.fields.text,
 			}
