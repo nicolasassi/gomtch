@@ -15,6 +15,8 @@ Finally, gomtch gives you the possibility to choose how to analise a potentially
 corpora by considering special characters and digits as wild cards and leaving to you to choose
 how much (%) of a term should be considered (ex: h4rd matches 90% with the word hard).
 
+https://nicolasassi.medium.com/gomtch-find-text-even-if-it-doesnt-want-to-be-found-a2229aed2a88
+
 
 ## Table of Contents
 
