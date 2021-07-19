@@ -197,7 +197,6 @@ func (d Doc) simpleCheck(value []rune, tokens Tokens, start int) (bool, []rune, 
 	for i, id := range tokens.mapping {
 		if start == 0 {
 			if d.IsSame(tokens.values[id], value) {
-				//log.Printf("[SIMPLE] compare: %s == ref: %s", string(tokens.values[id]), string(value))
 				return true, tokens.values[id], i
 			}
 			continue
@@ -245,7 +244,6 @@ func (sc *specialCheck) appendCompleteWord(new []rune) {
 func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 	sc := newSpecialCheck()
 	for _, id := range tokens.mapping {
-		//log.Printf("word: %s", string(tokens.values[id]))
 	Outer:
 		for {
 			for i := 0; i < len(value); i++ {
@@ -254,7 +252,6 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 				}
 				sc.ref = value[i : i+sc.cntr]
 				sc.compare = tokens.values[id]
-				//log.Printf("sc.ref: %v sc.compare: %v", string(sc.ref), string(tokens.values[id]))
 				if len(sc.ref) != len(sc.compare) {
 					if i+sc.cntr == len(value) {
 						sc.lastFound = false
@@ -265,7 +262,6 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 					sc.cntr++
 					break
 				}
-				//log.Printf("[SPECIAL] compare: %s and ref: %s", string(sc.compare), string(sc.ref))
 				if !d.IsSame(sc.compare, sc.ref) {
 					sc.lastFound = false
 					sc.startAt = 0
@@ -280,7 +276,6 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 					sc.completeWord = nil
 					break Outer
 				}
-				//log.Printf("[SPECIAL] compare: %s == ref: %s", string(sc.compare), string(sc.ref))
 				sc.appendCompleteWord(sc.compare)
 				sc.lastFound = true
 				if len(sc.ref) == 1 && sc.startAt == 0 {
