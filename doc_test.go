@@ -15,7 +15,7 @@ import (
 	"unicode/utf8"
 )
 
-func TestNewDoc(t *testing.T) {
+func TestNewDocFromReader(t *testing.T) {
 	type args struct {
 		text io.Reader
 		opts []Option
@@ -92,20 +92,20 @@ func TestNewDoc(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := NewDoc(tt.args.text, tt.args.opts...)
+			got, err := NewDocFromReader(tt.args.text, tt.args.opts...)
 			if (err != nil) != tt.wantErr {
-				t.Errorf("NewDoc() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("NewDocFromReader() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if got == nil {
-				t.Errorf("NewDoc() got = nil")
+				t.Errorf("NewDocFromReader() got = nil")
 				return
 			}
 			if !reflect.DeepEqual(got.Tokens, tt.want.Tokens) ||
 				!reflect.DeepEqual(got.Text, tt.want.Text) ||
 				!reflect.DeepEqual(got.optError, tt.want.optError) ||
 				!reflect.DeepEqual(got.transformer, tt.want.transformer) {
-				t.Errorf("NewDoc() got = %+v, want %+v", got, tt.want)
+				t.Errorf("NewDocFromReader() got = %+v, want %+v", got, tt.want)
 			}
 		})
 	}
@@ -411,7 +411,7 @@ func TestDoc_Compare(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			d, err := NewDoc(strings.NewReader(tt.fields.text), tt.fields.opts...)
+			d, err := NewDocFromReader(strings.NewReader(tt.fields.text), tt.fields.opts...)
 			if err != nil {
 				t.Error(err)
 			}
@@ -438,7 +438,7 @@ func TestDoc_Scan(t *testing.T) {
 		want Matches
 	}{
 		{"default", func() *Doc {
-			d, err := NewDoc(strings.NewReader(`Ingredientes: Açúcar, água, suco
+			d, err := NewDocFromReader(strings.NewReader(`Ingredientes: Açúcar, água, suco
 			concentrado cocaina de cassis e outras frutas, Womax aroma natural. Suco de fruta
 			total: 29 % dos quais 23 % de cassis.<br>Não contém Glúten<br>Garrafa de Vidro<br>Cassis
 			apresenta um sabor doce e levemente amargo, com uma cor escura. é tradicionalmente utilizado
@@ -449,7 +449,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("Natura"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("Natura"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -458,14 +458,14 @@ func TestDoc_Scan(t *testing.T) {
 		}()}},
 			map[int][]rune{}},
 		{"cocaina", func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(
 				NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -476,14 +476,14 @@ func TestDoc_Scan(t *testing.T) {
 				0: []rune("cocaina"),
 			}},
 		{"conditionalMatchScoreMatch", func() *Doc {
-			d, err := NewDoc(strings.NewReader("apple"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("apple"), WithTransform(NewASCII()),
 				WithSetLower(), WithConditionalMatchScore(matchScoreFunction), WithSequentialEqualCharsRemoval())
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("apple"), WithTransform(
+			d, err := NewDocFromReader(strings.NewReader("apple"), WithTransform(
 				NewASCII()), WithSetLower(), WithConditionalMatchScore(matchScoreFunction),
 				WithSequentialEqualCharsRemoval())
 			if err != nil {
@@ -495,14 +495,14 @@ func TestDoc_Scan(t *testing.T) {
 				0: []rune("aple"),
 			}},
 		{"conditionalMatchScoreNotMatch", func() *Doc {
-			d, err := NewDoc(strings.NewReader("g92"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("g92"), WithTransform(NewASCII()),
 				WithSetLower(), WithConditionalMatchScore(matchScoreFunction), WithSequentialEqualCharsRemoval())
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("*29"), WithTransform(
+			d, err := NewDocFromReader(strings.NewReader("*29"), WithTransform(
 				NewASCII()), WithSetLower(), WithConditionalMatchScore(matchScoreFunction),
 				WithSequentialEqualCharsRemoval())
 			if err != nil {
@@ -512,14 +512,14 @@ func TestDoc_Scan(t *testing.T) {
 		}()}},
 			map[int][]rune{}},
 		{"defaultDifferentPuncts", func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(
 				NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaina"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaina"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -530,14 +530,14 @@ func TestDoc_Scan(t *testing.T) {
 				0: []rune("cocaina"),
 			}},
 		{"surroundedByDots", func() *Doc {
-			d, err := NewDoc(strings.NewReader(".cocaína."), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader(".cocaína."), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaina"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaina"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -554,7 +554,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s atibaia", string(b)))
-			d, err := NewDoc(s,
+			d, err := NewDocFromReader(s,
 				WithTransform(NewASCII()),
 				WithSetLower(),
 				WithMinimumMatchScore(60),
@@ -564,7 +564,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -581,7 +581,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s ati baia", string(b)))
-			d, err := NewDoc(s,
+			d, err := NewDocFromReader(s,
 				WithTransform(NewASCII()),
 				WithSetLower(),
 				WithMinimumMatchScore(60),
@@ -591,7 +591,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -608,7 +608,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s at! báia", string(b)))
-			d, err := NewDoc(s,
+			d, err := NewDocFromReader(s,
 				WithTransform(NewASCII()),
 				WithSetLower(),
 				WithMinimumMatchScore(60),
@@ -618,7 +618,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -635,7 +635,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s atibaia boa vida", string(b)))
-			d, err := NewDoc(s,
+			d, err := NewDocFromReader(s,
 				WithTransform(NewASCII()),
 				WithSetLower(),
 				WithMinimumMatchScore(60),
@@ -645,7 +645,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia boa vida"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia boa vida"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil))
 			if err != nil {
 				log.Fatal(err)
@@ -662,7 +662,7 @@ func TestDoc_Scan(t *testing.T) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s atibaia boa vida Apple store", string(b)))
-			d, err := NewDoc(s,
+			d, err := NewDocFromReader(s,
 				WithTransform(NewASCII()),
 				WithSetLower(),
 				WithMinimumMatchScore(60),
@@ -673,7 +673,7 @@ func TestDoc_Scan(t *testing.T) {
 			return d
 		}(), args{docs: []Document{
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("atibaia vida"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("atibaia vida"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil))
 				if err != nil {
 					log.Fatal(err)
@@ -681,7 +681,7 @@ func TestDoc_Scan(t *testing.T) {
 				return d
 			}(),
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("Apple Store"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("Apple Store"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil))
 				if err != nil {
 					log.Fatal(err)
@@ -689,7 +689,7 @@ func TestDoc_Scan(t *testing.T) {
 				return d
 			}(),
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("play store"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("play store"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil))
 				if err != nil {
 					log.Fatal(err)
@@ -727,14 +727,14 @@ func BenchmarkDoc_Scan(b *testing.B) {
 		want Matches
 	}{
 		{"default", func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -744,14 +744,14 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			0: []rune("cocaina"),
 		}},
 		{"defaultDifferentPuncts", func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaína"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaína"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaina"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaina"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -761,14 +761,14 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			0: []rune("cocaina"),
 		}},
 		{"surroundedByDots", func() *Doc {
-			d, err := NewDoc(strings.NewReader(".cocaína."), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader(".cocaína."), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("cocaina"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("cocaina"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -784,13 +784,13 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s atibaia", string(b)))
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -806,13 +806,13 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s at! baia boa vida Apple store", string(b)))
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("atibaia"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("atibaia"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -828,13 +828,13 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s Unilever", string(b)))
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("Unilever"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("Unilever"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -851,13 +851,13 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s Uni le ver", string(b)))
 
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("Unilever"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("Unilever"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -873,13 +873,13 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s Un! le ver", string(b)))
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{func() *Doc {
-			d, err := NewDoc(strings.NewReader("Unilever"), WithTransform(NewASCII()),
+			d, err := NewDocFromReader(strings.NewReader("Unilever"), WithTransform(NewASCII()),
 				WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
@@ -895,14 +895,14 @@ func BenchmarkDoc_Scan(b *testing.B) {
 			}
 			b, err := ioutil.ReadAll(f)
 			s := strings.NewReader(fmt.Sprintf("%s Un! le ver a m i g o peixe urbano presente", string(b)))
-			d, err := NewDoc(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
+			d, err := NewDocFromReader(s, WithTransform(NewASCII()), WithSetLower(), WithMinimumMatchScore(60))
 			if err != nil {
 				log.Fatal(err)
 			}
 			return d
 		}(), args{docs: []Document{
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("Unilever"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("Unilever"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60))
 				if err != nil {
 					log.Fatal(err)
@@ -910,7 +910,7 @@ func BenchmarkDoc_Scan(b *testing.B) {
 				return d
 			}(),
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("amigo"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("amigo"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60))
 				if err != nil {
 					log.Fatal(err)
@@ -918,7 +918,7 @@ func BenchmarkDoc_Scan(b *testing.B) {
 				return d
 			}(),
 			func() *Doc {
-				d, err := NewDoc(strings.NewReader("peixe presente"), WithTransform(NewASCII()),
+				d, err := NewDocFromReader(strings.NewReader("peixe presente"), WithTransform(NewASCII()),
 					WithSetLower(), WithMinimumMatchScore(60))
 				if err != nil {
 					log.Fatal(err)

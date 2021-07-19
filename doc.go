@@ -24,7 +24,18 @@ type Doc struct {
 
 type Matches map[int][]rune
 
-func NewDoc(text io.Reader, opts ...Option) (*Doc, error) {
+func NewDoc(text string, opts ...Option) (*Doc, error) {
+	d := &Doc{
+		Text: text,
+	}
+	d.applyOptions(opts...)
+	if d.optError != nil {
+		return nil, d.optError
+	}
+	return d, nil
+}
+
+func NewDocFromReader(text io.Reader, opts ...Option) (*Doc, error) {
 	b, err := ioutil.ReadAll(text)
 	if err != nil {
 		return nil, err
@@ -32,13 +43,21 @@ func NewDoc(text io.Reader, opts ...Option) (*Doc, error) {
 	d := &Doc{
 		Text: string(b),
 	}
+	d.applyOptions(opts...)
+	if d.optError != nil {
+		return nil, d.optError
+	}
+	return d, nil
+}
+
+func (d *Doc) applyOptions(opts ...Option) {
 	// Loop through each option
 	for _, opt := range opts {
 		// Call the option giving the instantiated
 		// *Doc as the argument
 		opt(d)
 		if d.optError != nil {
-			return nil, d.optError
+			return
 		}
 	}
 	if d.Tokens == nil {
@@ -47,7 +66,6 @@ func NewDoc(text io.Reader, opts ...Option) (*Doc, error) {
 	if d.matchScoreFunc == nil {
 		WithMinimumMatchScore(100)(d)
 	}
-	return d, nil
 }
 
 func (d Doc) String() string {
