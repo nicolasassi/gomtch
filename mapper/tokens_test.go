@@ -1,4 +1,4 @@
-package gomtch
+package mapper
 
 import (
 	"reflect"
@@ -15,29 +15,29 @@ func TestMakeTokens(t *testing.T) {
 		want Tokens
 	}{
 		{"default", args{tokens: []string{"something"}}, Tokens{
-			values: map[int][]rune{
+			Values: map[int][]rune{
 				0: []rune("something"),
 			},
-			mapping: []int{0},
+			Ids: []int{0},
 		}},
 		{"twoWords", args{tokens: []string{"something", "else"}}, Tokens{
-			values: map[int][]rune{
+			Values: map[int][]rune{
 				0: []rune("something"),
 				1: []rune("else"),
 			},
-			mapping: []int{0, 1},
+			Ids: []int{0, 1},
 		}},
 		{"duplicatedWord", args{tokens: []string{"something", "else", "something"}}, Tokens{
-			values: map[int][]rune{
+			Values: map[int][]rune{
 				0: []rune("something"),
 				1: []rune("else"),
 			},
-			mapping: []int{0, 1, 0},
+			Ids: []int{0, 1, 0},
 		}},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := MakeTokens(tt.args.tokens)
+			got := NewMappingFromTokens(tt.args.tokens).Map()
 			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("MakeTokens() = %v, want %v", got, tt.want)
 			}
@@ -47,7 +47,7 @@ func TestMakeTokens(t *testing.T) {
 
 func TestTokens_mapTokens(t1 *testing.T) {
 	type args struct {
-		m mapping
+		m Mapping
 	}
 	tests := []struct {
 		name string
@@ -55,18 +55,15 @@ func TestTokens_mapTokens(t1 *testing.T) {
 		want []int
 	}{
 		{"default", args{
-			m: makeMapping([]string{"a", "b", "a", "c", "c", "a", "b", "d"}),
+			m: NewMappingFromTokens([]string{"a", "b", "a", "c", "c", "a", "b", "d"}),
 		},
 			[]int{0, 1, 0, 3, 3, 0, 1, 7}},
 	}
 	for _, tt := range tests {
 		t1.Run(tt.name, func(t1 *testing.T) {
-			t := &Tokens{
-				values: map[int][]rune{},
-			}
-			t.mapTokens(tt.args.m)
-			if !reflect.DeepEqual(tt.want, t.mapping) {
-				t1.Errorf("mapTokens() = %v, want %v", t.mapping, tt.want)
+			ids := tt.args.m.Map().Ids
+			if !reflect.DeepEqual(tt.want, ids) {
+				t1.Errorf("mapTokens() = %v, want %v", ids, tt.want)
 			}
 		})
 	}
@@ -79,7 +76,7 @@ func Test_makeMapping(t *testing.T) {
 	tests := []struct {
 		name string
 		args args
-		want mapping
+		want Mapping
 	}{
 		{"default0", args{v: []string{"comida", "gostosa"}}, map[string][]int{
 			"comida":  {0},
@@ -120,8 +117,8 @@ func Test_makeMapping(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			if got := makeMapping(tt.args.v); !reflect.DeepEqual(got, tt.want) {
-				t.Errorf("makeMapping() = %v, want %v", got, tt.want)
+			if got := NewMappingFromTokens(tt.args.v); !reflect.DeepEqual(got, tt.want) {
+				t.Errorf("NewMappingFromTokens() = %v, want %v", got, tt.want)
 			}
 		})
 	}
