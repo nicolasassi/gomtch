@@ -67,8 +67,6 @@ Note that the matching behaves differently when comparing digits, letters and sp
 
 ## Examples
 
-Adapted from examples_test.go:
-
 ### Simple document
 
 ```Go 
