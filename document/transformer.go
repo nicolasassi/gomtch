@@ -1,4 +1,4 @@
-package gomtch
+package document
 
 import (
 	"golang.org/x/text/runes"

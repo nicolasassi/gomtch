@@ -1,4 +1,4 @@
-package gomtch
+package document
 
 import (
 	"bytes"
@@ -9,10 +9,10 @@ import (
 	"unicode"
 )
 
-type Option func(*Doc)
+type Option func(*Document)
 
 func WithHMTLParsing() Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		// Load the HTML document
 		doc, err := goquery.NewDocumentFromReader(strings.NewReader(d.Text))
 		if err != nil {
@@ -24,7 +24,7 @@ func WithHMTLParsing() Option {
 }
 
 func WithTransform(t Transformer) Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		s, err := t.Transform(d.Text)
 		if err != nil {
 			d.optError = err
@@ -37,7 +37,7 @@ func WithTransform(t Transformer) Option {
 func WithSequentialEqualCharsRemoval() Option {
 	var buf bytes.Buffer
 	var pc rune
-	return func(d *Doc) {
+	return func(d *Document) {
 		for i, c := range d.Text {
 			if i == 0 {
 				pc = c
@@ -56,25 +56,25 @@ func WithSequentialEqualCharsRemoval() Option {
 }
 
 func WithSetLower() Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		d.Text = strings.ToLower(d.Text)
 	}
 }
 
 func WithSetUpper() Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		d.Text = strings.ToUpper(d.Text)
 	}
 }
 
 func WithReplacer(pattern *regexp.Regexp, rep string) Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		d.Text = pattern.ReplaceAllString(d.Text, rep)
 	}
 }
 
 func WithMinimumMatchScore(score int) Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		d.matchScoreFunc = func(matchScore, wordLength int) bool {
 			return matchScore >= score*wordLength/100
 		}
@@ -82,13 +82,13 @@ func WithMinimumMatchScore(score int) Option {
 }
 
 func WithConditionalMatchScore(f func(int, int) bool) Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		d.matchScoreFunc = f
 	}
 }
 
 func WithCustomRegexpTokenizer(t *tokenize.RegexpTokenizer) Option {
-	return func(d *Doc) {
+	return func(d *Document) {
 		if t == nil {
 			d.Tokens = []string{regexp.MustCompile(`\s+`).ReplaceAllString(d.Text, "")}
 			return

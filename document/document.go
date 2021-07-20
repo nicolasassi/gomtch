@@ -1,6 +1,8 @@
-package gomtch
+package document
 
 import (
+	"fmt"
+	"github.com/nicolasassi/gomtch/mapper"
 	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
@@ -14,7 +16,18 @@ var (
 	numericalInfo = []rune("%xª°º")
 )
 
-type Doc struct {
+type Documenter interface {
+	Compare(ref mapper.Tokens) (bool, []rune)
+	IsEqual(a, b []rune) bool
+	CompareRune(a, b rune) bool
+	fmt.Stringer
+}
+
+type Scanner interface {
+	Scan(docs ...Documenter) Matches
+}
+
+type Document struct {
 	matchScoreFunc func(int, int) bool
 	transformer    transform.Transformer
 	optError       error
@@ -24,8 +37,8 @@ type Doc struct {
 
 type Matches map[int][]rune
 
-func NewDoc(text string, opts ...Option) (*Doc, error) {
-	d := &Doc{
+func NewDocument(text string, opts ...Option) (*Document, error) {
+	d := &Document{
 		Text: text,
 	}
 	d.applyOptions(opts...)
@@ -35,12 +48,12 @@ func NewDoc(text string, opts ...Option) (*Doc, error) {
 	return d, nil
 }
 
-func NewDocFromReader(text io.Reader, opts ...Option) (*Doc, error) {
+func NewDocumentFromReader(text io.Reader, opts ...Option) (*Document, error) {
 	b, err := ioutil.ReadAll(text)
 	if err != nil {
 		return nil, err
 	}
-	d := &Doc{
+	d := &Document{
 		Text: string(b),
 	}
 	d.applyOptions(opts...)
@@ -50,11 +63,11 @@ func NewDocFromReader(text io.Reader, opts ...Option) (*Doc, error) {
 	return d, nil
 }
 
-func (d *Doc) applyOptions(opts ...Option) {
+func (d *Document) applyOptions(opts ...Option) {
 	// Loop through each option
 	for _, opt := range opts {
 		// Call the option giving the instantiated
-		// *Doc as the argument
+		// *Document as the argument
 		opt(d)
 		if d.optError != nil {
 			return
@@ -68,17 +81,17 @@ func (d *Doc) applyOptions(opts ...Option) {
 	}
 }
 
-func (d Doc) String() string {
+func (d Document) String() string {
 	return d.Text
 }
 
-// CompareRune compares one rune to another and returns true if they match.
-// Besides checking equality by the standard form == it also applies some rules
+// CompareRune compares one rune to another and returns true if there is a match.
+// Besides checking equality by the standard form (==) it also applies some rules
 // to check if the compared value might be the same as the reference but is masked somehow.
 // Numbers and numerical info must match exactly. Also if both A and B are letters both
 // should match as well. If the compared entities is not a letter, number or numerical info and
 // the reference is not a number or numerical info, it will match.
-func (d Doc) CompareRune(a, b rune) bool {
+func (d Document) CompareRune(a, b rune) bool {
 	if unicode.IsNumber(a) || isNumericalInfo(a) {
 		return a == b
 	}
@@ -94,14 +107,14 @@ func (d Doc) CompareRune(a, b rune) bool {
 	return true
 }
 
-// IsSame compares A and B and returns true if they probably are the same word and false otherwise.
+// IsEqual compares A and B and returns true if they probably are the same word and false otherwise.
 // if A and B have different lengths it will return false.
 // The A and B variables are not interchangeable as A represents the entities to be compared to B, the reference.
-// IsSame uses the minimumMatchScore to determine if the words are the same even if there are differences
+// IsEqual uses the minimumMatchScore to determine if the words are the same even if there are differences
 // between then.
 // Numbers, numericalInfo and letters should match exactly and the matches increase the counter for
 // the minimumMatchScore, otherwise it returns false immediately.
-func (d Doc) IsSame(a, b []rune) bool {
+func (d Document) IsEqual(a, b []rune) bool {
 	if len(a) == 1 && len(b) == 1 {
 		return d.CompareRune(a[0], b[0])
 	}
@@ -130,15 +143,15 @@ func (d Doc) IsSame(a, b []rune) bool {
 	return d.matchScoreFunc(matchScore, len(b))
 }
 
-func (d Doc) Scan(docs ...Document) Matches {
-	m := map[int][]rune{}
-	tokens := MakeTokens(d.Tokens)
+func (d Document) Scan(docs ...Documenter) Matches {
+	matches := map[int][]rune{}
+	tokens := mapper.NewMappingFromTokens(d.Tokens).Map()
 	for i, doc := range docs {
 		if ok, sequence := doc.Compare(tokens); ok {
-			m[i] = sequence
+			matches[i] = sequence
 		}
 	}
-	return m
+	return matches
 }
 
 type compareEntity struct {
@@ -148,7 +161,7 @@ type compareEntity struct {
 	last     int
 }
 
-func (d Doc) Compare(tokens Tokens) (bool, []rune) {
+func (d Document) Compare(tokens mapper.Tokens) (bool, []rune) {
 	ce := compareEntity{}
 	var sequence []rune
 	for _, ref := range d.Tokens {
@@ -193,19 +206,19 @@ func isSpecial(r rune) bool {
 	return true
 }
 
-func (d Doc) simpleCheck(value []rune, tokens Tokens, start int) (bool, []rune, int) {
-	for i, id := range tokens.mapping {
+func (d Document) simpleCheck(value []rune, tokens mapper.Tokens, start int) (bool, []rune, int) {
+	for i, id := range tokens.Ids {
 		if start == 0 {
-			if d.IsSame(tokens.values[id], value) {
-				return true, tokens.values[id], i
+			if d.IsEqual(tokens.GetRunesByID(id), value) {
+				return true, tokens.GetRunesByID(id), i
 			}
 			continue
 		}
 		if i < start {
 			continue
 		}
-		if d.IsSame(tokens.values[id], value) {
-			return true, tokens.values[id], i
+		if d.IsEqual(tokens.GetRunesByID(id), value) {
+			return true, tokens.GetRunesByID(id), i
 		} else {
 			return false, nil, i
 		}
@@ -241,9 +254,9 @@ func (sc *specialCheck) appendCompleteWord(new []rune) {
 	sc.completeWord = append(sc.completeWord, new...)
 }
 
-func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
+func (d Document) specialCheck(value []rune, tokens mapper.Tokens) (bool, []rune) {
 	sc := newSpecialCheck()
-	for _, id := range tokens.mapping {
+	for _, id := range tokens.Ids {
 	Outer:
 		for {
 			for i := 0; i < len(value); i++ {
@@ -251,7 +264,7 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 					continue
 				}
 				sc.ref = value[i : i+sc.cntr]
-				sc.compare = tokens.values[id]
+				sc.compare = tokens.GetRunesByID(id)
 				if len(sc.ref) != len(sc.compare) {
 					if i+sc.cntr == len(value) {
 						sc.lastFound = false
@@ -262,7 +275,7 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 					sc.cntr++
 					break
 				}
-				if !d.IsSame(sc.compare, sc.ref) {
+				if !d.IsEqual(sc.compare, sc.ref) {
 					sc.lastFound = false
 					sc.startAt = 0
 					sc.cntr = 1
@@ -293,7 +306,7 @@ func (d Doc) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 				}
 				sc.startAt = i + sc.cntr
 				if sc.startAt == len(value) {
-					if !d.IsSame(sc.completeWord, value) {
+					if !d.IsEqual(sc.completeWord, value) {
 						return false, nil
 					}
 					return true, sc.completeWordSpaced
