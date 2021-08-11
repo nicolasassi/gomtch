@@ -1,4 +1,4 @@
-package mapper
+package gomtch
 
 import "unicode"
 

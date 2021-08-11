@@ -1,8 +1,7 @@
-package document
+package gomtch
 
 import (
 	"fmt"
-	"github.com/nicolasassi/gomtch/mapper"
 	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
@@ -17,7 +16,7 @@ var (
 )
 
 type Documenter interface {
-	Compare(ref mapper.Tokens) (bool, []rune)
+	Compare(ref Tokens) (bool, []rune)
 	IsEqual(a, b []rune) bool
 	CompareRune(a, b rune) bool
 	fmt.Stringer
@@ -145,7 +144,7 @@ func (d Document) IsEqual(a, b []rune) bool {
 
 func (d Document) Scan(docs ...Documenter) Matches {
 	matches := map[int][]rune{}
-	tokens := mapper.NewMappingFromTokens(d.Tokens).Map()
+	tokens := NewMappingFromTokens(d.Tokens).Map()
 	for i, doc := range docs {
 		if ok, sequence := doc.Compare(tokens); ok {
 			matches[i] = sequence
@@ -161,7 +160,7 @@ type compareEntity struct {
 	last     int
 }
 
-func (d Document) Compare(tokens mapper.Tokens) (bool, []rune) {
+func (d Document) Compare(tokens Tokens) (bool, []rune) {
 	ce := compareEntity{}
 	var sequence []rune
 	for _, ref := range d.Tokens {
@@ -206,7 +205,7 @@ func isSpecial(r rune) bool {
 	return true
 }
 
-func (d Document) simpleCheck(value []rune, tokens mapper.Tokens, start int) (bool, []rune, int) {
+func (d Document) simpleCheck(value []rune, tokens Tokens, start int) (bool, []rune, int) {
 	for i, id := range tokens.Ids {
 		if start == 0 {
 			if d.IsEqual(tokens.GetRunesByID(id), value) {
@@ -254,7 +253,7 @@ func (sc *specialCheck) appendCompleteWord(new []rune) {
 	sc.completeWord = append(sc.completeWord, new...)
 }
 
-func (d Document) specialCheck(value []rune, tokens mapper.Tokens) (bool, []rune) {
+func (d Document) specialCheck(value []rune, tokens Tokens) (bool, []rune) {
 	sc := newSpecialCheck()
 	for _, id := range tokens.Ids {
 	Outer:

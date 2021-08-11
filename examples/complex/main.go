@@ -2,28 +2,28 @@ package main
 
 import (
 	"bytes"
-	"github.com/nicolasassi/gomtch/document"
+	"github.com/nicolasassi/gomtch"
 	"log"
 	"regexp"
 )
 
 func main() {
 	text := "<p>This is a REAAAAAAL WORLD example of a téxt quite h4rd to match!!<p>"
-	corp, err := document.NewDocument(text,
-		document.WithSetLower(),
-		document.WithSequentialEqualCharsRemoval(),
-		document.WithHMTLParsing(),
-		document.WithReplacer(regexp.MustCompile(`[\[\]()\-.,:;{}"'!?]`), " "),
-		document.WithTransform(document.NewASCII()))
+	corp, err := gomtch.NewDocument(text,
+		gomtch.WithSetLower(),
+		gomtch.WithSequentialEqualCharsRemoval(),
+		gomtch.WithHMTLParsing(),
+		gomtch.WithReplacer(regexp.MustCompile(`[\[\]()\-.,:;{}"'!?]`), " "),
+		gomtch.WithTransform(gomtch.NewASCII()))
 	if err != nil {
 		log.Fatal(err)
 	}
-	match1, err := document.NewDocumentFromReader(bytes.NewReader([]byte("real world")))
+	match1, err := gomtch.NewDocumentFromReader(bytes.NewReader([]byte("real world")))
 	if err != nil {
 		log.Fatal(err)
 	}
-	match2, err := document.NewDocumentFromReader(bytes.NewReader([]byte("text quite hard to match")),
-		document.WithMinimumMatchScore(90))
+	match2, err := gomtch.NewDocumentFromReader(bytes.NewReader([]byte("text quite hard to match")),
+		gomtch.WithMinimumMatchScore(90))
 	if err != nil {
 		log.Fatal(err)
 	}

@@ -1,18 +1,18 @@
 package main
 
 import (
-	"github.com/nicolasassi/gomtch/document"
+	"github.com/nicolasassi/gomtch"
 	"log"
 )
 
 func main() {
 	text := "this is a text corp0ra"
 	tokenToFind := "corpora"
-	corp, err := document.NewDocument(text)
+	corp, err := gomtch.NewDocument(text)
 	if err != nil {
 		log.Fatal(err)
 	}
-	match, err := document.NewDocument(tokenToFind, document.WithMinimumMatchScore(90))
+	match, err := gomtch.NewDocument(tokenToFind, gomtch.WithMinimumMatchScore(90))
 	if err != nil {
 		log.Fatal(err)
 	}

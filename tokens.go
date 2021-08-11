@@ -1,4 +1,4 @@
-package mapper
+package gomtch
 
 type Tokens struct {
 	Values map[int][]rune

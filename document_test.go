@@ -1,9 +1,8 @@
-package document
+package gomtch
 
 import (
 	"fmt"
 	"github.com/jdkato/prose/tokenize"
-	"github.com/nicolasassi/gomtch/mapper"
 	"golang.org/x/text/transform"
 	"io"
 	"io/ioutil"
@@ -283,7 +282,7 @@ func TestDoc_Compare(t *testing.T) {
 		opts []Option
 	}
 	type args struct {
-		tokens mapper.Tokens
+		tokens Tokens
 	}
 	tests := []struct {
 		name     string
@@ -295,42 +294,42 @@ func TestDoc_Compare(t *testing.T) {
 		{"default", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"cocaina"}).Map()},
+			tokens: NewMappingFromTokens([]string{"cocaina"}).Map()},
 			true,
 			[]rune("cocaina"),
 		},
 		{"spacedWord", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"co", "ca", "ina"}).Map()},
+			tokens: NewMappingFromTokens([]string{"co", "ca", "ina"}).Map()},
 			true,
 			[]rune("co ca ina"),
 		},
 		{"allSpacedWord", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"c", "o", "c", "a", "i", "n", "a"}).Map()},
+			tokens: NewMappingFromTokens([]string{"c", "o", "c", "a", "i", "n", "a"}).Map()},
 			true,
 			[]rune("c o c a i n a"),
 		},
 		{"allSpacedWord", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"co", "ca", "i", "na"}).Map()},
+			tokens: NewMappingFromTokens([]string{"co", "ca", "i", "na"}).Map()},
 			true,
 			[]rune("co ca i na"),
 		},
 		{"bigText", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"abc", "ced", "cocaina", "a", "i", "n", "a"}).Map()},
+			tokens: NewMappingFromTokens([]string{"abc", "ced", "cocaina", "a", "i", "n", "a"}).Map()},
 			true,
 			[]rune("cocaina"),
 		},
 		{"bigTextSplited", fields{
 			text: "cocaína",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"abc", "ced", "coca", "ina", "a", "i", "n", "a"}).Map()},
+			tokens: NewMappingFromTokens([]string{"abc", "ced", "coca", "ina", "a", "i", "n", "a"}).Map()},
 			true,
 			[]rune("coca ina"),
 		},
@@ -338,7 +337,7 @@ func TestDoc_Compare(t *testing.T) {
 			text: "cocaína branca",
 			opts: []Option{WithTransform(
 				NewASCII()), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"cocaina", "branca"}).Map()},
+			tokens: NewMappingFromTokens([]string{"cocaina", "branca"}).Map()},
 			true,
 			[]rune("cocaina branca"),
 		},
@@ -347,7 +346,7 @@ func TestDoc_Compare(t *testing.T) {
 			opts: []Option{
 				WithTransform(NewASCII()), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil),
 			}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"cocaina", "br", "anca"}).Map()},
+			tokens: NewMappingFromTokens([]string{"cocaina", "br", "anca"}).Map()},
 			true,
 			[]rune("cocaina br anca"),
 		},
@@ -356,42 +355,42 @@ func TestDoc_Compare(t *testing.T) {
 			opts: []Option{
 				WithTransform(NewASCII()), WithMinimumMatchScore(60), WithCustomRegexpTokenizer(nil),
 			}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"c", "o", "c", "a", "i", "n", "a", "b", "r", "a", "n", "c", "a"}).Map()},
+			tokens: NewMappingFromTokens([]string{"c", "o", "c", "a", "i", "n", "a", "b", "r", "a", "n", "c", "a"}).Map()},
 			true,
 			[]rune("c o c a i n a b r a n c a"),
 		},
 		{"un! lever", fields{
 			text: "unilever",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"un", "!", "lever"}).Map()},
+			tokens: NewMappingFromTokens([]string{"un", "!", "lever"}).Map()},
 			true,
 			[]rune("un ! lever"),
 		},
 		{"uni lever", fields{
 			text: "unilever",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"uni", "lever"}).Map()},
+			tokens: NewMappingFromTokens([]string{"uni", "lever"}).Map()},
 			true,
 			[]rune("uni lever"),
 		},
 		{"specialBefore", fields{
 			text: "unilever",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{".", "uni", "lever"}).Map()},
+			tokens: NewMappingFromTokens([]string{".", "uni", "lever"}).Map()},
 			true,
 			[]rune("uni lever"),
 		},
 		{"pera", fields{
 			text: "unilever",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"pera"}).Map()},
+			tokens: NewMappingFromTokens([]string{"pera"}).Map()},
 			false,
 			nil,
 		},
 		{"pera", fields{
 			text: "unilever bolada",
 			opts: []Option{WithTransform(NewASCII()), WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{"unilever muito bolada"}).Map()},
+			tokens: NewMappingFromTokens([]string{"unilever muito bolada"}).Map()},
 			false,
 			nil,
 		},
@@ -399,7 +398,7 @@ func TestDoc_Compare(t *testing.T) {
 			text: "natura",
 			opts: []Option{WithTransform(NewASCII()), WithSetLower(),
 				WithMinimumMatchScore(60)}}, args{
-			tokens: mapper.NewMappingFromTokens([]string{`
+			tokens: NewMappingFromTokens([]string{`
 										Ingredientes: Açúcar, água, suco concentrado cocaina de cassis e outras frutas,
 										Womax aroma natural. Suco de fruta total: 29 % dos quais 23 % de cassis.
 										<br>Não contém Glúten<br>Garrafa de Vidro<br>Cassis apresenta um sabor doce
